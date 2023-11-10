@@ -1,6 +1,11 @@
 const mysql = require ("mysql2");
 const inquirer = require ("inquirer");
 
+const employeeArray = ['None'];
+const departmentsArray = [];
+const rolesArray = [];
+
+
 const db = mysql.createConnection(
     {
       host: "localhost",
@@ -11,11 +16,13 @@ const db = mysql.createConnection(
     console.log(`Connected to the database.`)
   );
 
+  
+
   function init () {
     inquirer.prompt([
         {
             type: "list",
-            message: "What would you like to do",
+            message: "What are you doing today ?",
             name: "action",
             choices: [
                 "View all Departments", 
@@ -51,4 +58,31 @@ const db = mysql.createConnection(
     });
   };
 
+  async function viewAllDepartments() {
+    const departments = await db.promise().query('')
+  };
+
+  async function addDepartment() {
+
+  };
+
+  async function viewAllEmployees() {
+
+  };
+
+  async function addEmployee() {
+
+  };
+
+  async function updateEmployee() {
+
+  };
+
+  async function viewAllRoles() {
+
+  };
+
+  async function addRole() {
+
+  };
 init();
