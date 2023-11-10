@@ -1,8 +1,8 @@
 const mysql = require ("mysql2");
 const inquirer = require ("inquirer");
 
-const employeeArray = ['None'];
 const departmentsArray = [];
+const employeeArray = [''];
 const rolesArray = [];
 
 
@@ -59,11 +59,27 @@ const db = mysql.createConnection(
   };
 
   async function viewAllDepartments() {
-    const departments = await db.promise().query('')
+    const departments = await db.promise().query(`SELECT * FROM departments`);
+    console.table(departments);
   };
 
   async function addDepartment() {
-
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'departmentName',
+            message: "What is the name of the department ?",
+        }
+    ]) .then((data) => {
+        const seed = `INSERT INTO departments (department_name) VALUES ('${data.departmentName}')`
+        db.query(sql, function (err, result) {
+            if (err) {
+                console.error(err);
+            } else {
+                console.log(`Added department to the database`);
+            }});
+        });
+    });
   };
 
   async function viewAllEmployees() {
