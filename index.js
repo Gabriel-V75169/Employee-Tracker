@@ -1,11 +1,6 @@
 const mysql = require ("mysql2");
 const inquirer = require ("inquirer");
 
-const departmentsArray = [];
-const employeeArray = [''];
-const rolesArray = [];
-
-
 const db = mysql.createConnection(
     {
       host: "localhost",
@@ -72,22 +67,53 @@ const db = mysql.createConnection(
         }
     ]) .then((data) => {
         const seed = `INSERT INTO departments (department_name) VALUES ('${data.departmentName}')`
-        db.query(sql, function (err, result) {
+        db.query(seed, function (err, result) {
             if (err) {
                 console.error(err);
             } else {
                 console.log(`Added department to the database`);
             }});
         });
-    });
-  };
+     };
 
   async function viewAllEmployees() {
-
+    const employees = await db.promise().query(`SELECT * FROM employees`);
+    console.table(employees);
   };
 
   async function addEmployee() {
 
+    const roleSelect = `SELECT * FROM roles`;
+
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'firstName',
+            message: 'Employees First name',
+        },
+
+        {
+            type: 'input',
+            name: 'lastName',
+            message: 'Employees Last name',
+        },
+
+        {
+            type: 'list',
+            name: 'departmentName',
+            message: 'What department is this employee ?',
+            choices: [],
+        },
+        
+
+        {
+            type: 'list',
+            name: 'roleName',
+            message:'What is their role in the company ?',
+            choices: [],
+        },
+
+    ]);
   };
 
   async function updateEmployee() {
@@ -95,10 +121,11 @@ const db = mysql.createConnection(
   };
 
   async function viewAllRoles() {
-
+    const roles = await db.promise().query(`SELECT * FROM roles`);
+    console.table(roles);
   };
 
   async function addRole() {
-
+    
   };
 init();
