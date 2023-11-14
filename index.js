@@ -1,5 +1,10 @@
-const mysql = require ("mysql2");
+const mysql = require ("mysql2/promise");
 const inquirer = require ("inquirer");
+require('dotenv').config();
+
+const employees = await db.promise().query(`SELECT * FROM employees`);
+const roles = await db.promise().query(`SELECT * FROM roles`);
+const departments = await db.promise().query(`SELECT * FROM departments`);
 
 const db = mysql.createConnection(
     {
@@ -77,15 +82,26 @@ const db = mysql.createConnection(
      };
 
   async function viewAllEmployees() {
-    const employees = await db.promise().query(`SELECT * FROM employees`);
-    console.table(employees);
+    return employees;
   };
 
   async function addEmployee() {
+    db.query(employees, function (err, results) {
+        if (err) {
+            console.error(err);
+        } else {
+            console.log(`Employees retrieved`)
+        }
+    });
+    db.query(roles, function (err, results) {
+        if (err) {
+            console.error(err);
+        } else {
+            console.log(`roles retrieved`)
+        }
+    });
 
-    const roleSelect = `SELECT * FROM roles`;
-
-    inquirer.prompt([
+    const newEmployee = inquirer.prompt([
         {
             type: 'input',
             name: 'firstName',
@@ -100,20 +116,27 @@ const db = mysql.createConnection(
 
         {
             type: 'list',
-            name: 'departmentName',
-            message: 'What department is this employee ?',
-            choices: [],
-        },
-        
-
-        {
-            type: 'list',
             name: 'roleName',
             message:'What is their role in the company ?',
             choices: [],
         },
 
-    ]);
+        {
+            type: 'list',
+            name: 'managerName',
+            message: 'Who is the employees manager ?',
+            choices:  [],
+        },
+
+    ]) .then((data) => {
+        const seed = `INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES ('${data.firstName},${data.lastName},${data.roleName},${data.managerName} ')`
+        db.query(seed, function (err, result) {
+            if (err) {
+                console.error(err);
+            } else {
+                console.log(`Added employee to the database`);
+            }});
+    })
   };
 
   async function updateEmployee() {
@@ -121,8 +144,7 @@ const db = mysql.createConnection(
   };
 
   async function viewAllRoles() {
-    const roles = await db.promise().query(`SELECT * FROM roles`);
-    console.table(roles);
+    return roles;
   };
 
   async function addRole() {
