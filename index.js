@@ -2,6 +2,9 @@ const mysql = require ("mysql2/promise");
 const inquirer = require ("inquirer");
 require('dotenv').config();
 
+let departmentsArr = [];
+let employeesArr = ['None'];
+let rolesArr = [];
 
 
 const db = mysql.createConnection(
@@ -55,10 +58,12 @@ const db = mysql.createConnection(
         }
     });
   };
+  init();
 
   async function viewAllDepartments() {
     const departments = await db.promise().query(`SELECT * FROM departments`);
     console.table(departments);
+    init();
   };
 
 
@@ -78,9 +83,8 @@ const db = mysql.createConnection(
         db.query(seed, function (err, result) {
             if (err) {
                 console.error(err);
-            } else {
-                console.log(`Added department to the database`);
-            }});
+            } 
+            });
         });
      };
 
@@ -97,19 +101,28 @@ const db = mysql.createConnection(
     const roles = await db.promise().query(`SELECT * FROM roles`);
 
     db.query(employees, function (err, results) {
-        if (err) {
-            console.error(err);
-        } else {
-            console.log(`Employees retrieved`)
+        
+        db.query(roles, function (err, result) {
+            for(let i = 0; i < result.length; i++){
+                var roleName = result[i].role_name;
+                var roleId = result[i].id
+                rolesArr.push({
+                    name: roleName,
+                    value: roleId
+                })
+            } 
+            for(let j = 0; j < result.length; j++){
+                var employeeName = result[j].first_name + " " + result[j].last_name;
+                var employeeId = result[j].id;
+                employeesArr.push({
+                    name: employeeName,
+                    value: employeeId
+                });
         }
     });
-    db.query(roles, function (err, results) {
-        if (err) {
-            console.error(err);
-        } else {
-            console.log(`roles retrieved`)
-        }
+        
     });
+    
 
     inquirer.prompt([
         {
@@ -128,14 +141,14 @@ const db = mysql.createConnection(
             type: 'list',
             name: 'roleId',
             message:'What is their role in the company ?',
-            choices: [],
+            choices: rolesArr,
         },
 
         {
             type: 'list',
             name: 'managerName',
             message: 'Who is the employees manager ?',
-            choices:  [],
+            choices:  employeeName,
         },
 
     ]) .then((data) => {
@@ -146,12 +159,61 @@ const db = mysql.createConnection(
             } else {
                 console.log(`Added employee to the database`);
             }});
-    })
+    });
   };
 
   async function updateEmployee() {
+    const employees = await db.promise().query(`SELECT * FROM employees`);
+    const roles = await db.promise().query(`SELECT * FROM roles`);
 
-  };
+    db.query(employees, function (err, results) {
+        
+        db.query(roles, function (err, result) {
+            for(let i = 0; i < result.length; i++){
+                var roleName = result[i].role_name;
+                var roleId = result[i].id
+                rolesArr.push({
+                    name: roleName,
+                    value: roleId
+                })
+            } 
+            for(let j = 0; j < result.length; j++){
+                var employeeName = result[j].first_name + " " + result[j].last_name;
+                var employeeId = result[j].id;
+                employeesArr.push({
+                    name: employeeName,
+                    value: employeeId
+                });
+        }
+    });
+ })};
+    inquirer.prompt([
+        {
+            type: 'list',
+            name: 'Employee',
+            message: 'What employee are you trying to change ?',
+            choices: employeeName,
+        },
+
+
+        {
+            type: 'list',
+            name: 'roleId',
+            message:'What new role are you assigning them ?',
+            choices: rolesArr,
+        },
+
+    ]) .then((data) => {
+        const seed = `INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES ('${data.firstName},${data.lastName},${data.roleId},${data.managerName} ')`
+        db.query(seed, function (err, result) {
+            if (err) {
+                console.error(err);
+            } else {
+                console.log(`Added employee to the database`);
+            }});
+   
+    });
+
 
   async function viewAllRoles() {
     
@@ -163,15 +225,16 @@ const db = mysql.createConnection(
   async function addRole() {
     
     const departments = await db.promise().query(`SELECT * FROM departments`);
-    const roles = await db.promise().query(`SELECT * FROM roles`);
 
     db.query(departments, function (err, result) {
-        if (err) {
-            console.error(err);
-        } else {
-            console.log(`departments retrieved`)
-        }
-    })
+        for(let i = 0; i < result.length; i++){
+            const departmentName = result[i].department_name;
+            const departmentId = result[i].id
+            departmentsArr.push({
+                name: departmentName,
+                value: departmentId
+            })
+        }});
 
     inquirer.prompt([
         {
@@ -201,4 +264,4 @@ const db = mysql.createConnection(
                 console.log(`Added role to the database`);
             }});
   })};
-init();
+
